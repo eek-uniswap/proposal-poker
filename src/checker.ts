@@ -69,7 +69,18 @@ export async function runCheckerCycle(
       continue
     }
 
-    console.log(`[checker] Proposal ${id}: executing...`)
+    // Read proposal actions to calculate total ETH value to forward
+    const actions = await publicClient.readContract({
+      address: GOVERNOR_BRAVO_ADDRESS,
+      abi: GOVERNOR_ABI,
+      functionName: 'getActions',
+      args: [id],
+    })
+    // viem returns multiple named outputs as an array — values is at index 1
+    const actionValues = (actions as unknown as [unknown, bigint[]])[1]
+    const totalValue = actionValues.reduce((sum, v) => sum + v, 0n)
+
+    console.log(`[checker] Proposal ${id}: executing... (value: ${totalValue})`)
 
     try {
       const hash = await walletClient.writeContract({
@@ -77,6 +88,7 @@ export async function runCheckerCycle(
         abi: GOVERNOR_ABI,
         functionName: 'execute',
         args: [id],
+        value: totalValue,
       })
 
       const receipt = await publicClient.waitForTransactionReceipt({ hash })

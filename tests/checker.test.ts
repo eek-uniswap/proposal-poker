@@ -84,8 +84,9 @@ describe('runCheckerCycle', () => {
     const txHash = '0xabc123' as `0x${string}`
 
     publicClient.readContract
-      .mockResolvedValueOnce(94n)
-      .mockResolvedValueOnce({ eta: pastEta })
+      .mockResolvedValueOnce(94n)                          // proposalCount
+      .mockResolvedValueOnce({ eta: pastEta })              // proposals(94)
+      .mockResolvedValueOnce([[], [0n], [], []])            // getActions(94) - zero ETH
 
     publicClient.multicall.mockResolvedValue([
       { status: 'success', result: 5 },
@@ -116,6 +117,7 @@ describe('runCheckerCycle', () => {
     publicClient.readContract
       .mockResolvedValueOnce(94n)
       .mockResolvedValueOnce({ eta: pastEta })
+      .mockResolvedValueOnce([[], [0n], [], []])
 
     publicClient.multicall.mockResolvedValue([
       { status: 'success', result: 5 },
@@ -145,6 +147,7 @@ describe('runCheckerCycle', () => {
     publicClient.readContract
       .mockResolvedValueOnce(94n)
       .mockResolvedValueOnce({ eta: pastEta })
+      .mockResolvedValueOnce([[], [0n], [], []])
 
     publicClient.multicall.mockResolvedValue([
       { status: 'success', result: 5 },

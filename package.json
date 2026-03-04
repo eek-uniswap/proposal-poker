@@ -7,7 +7,8 @@
   },
   "scripts": {
     "start": "tsx src/index.ts",
-    "test": "vitest run",
+    "test": "vitest run tests/notify.test.ts tests/checker.test.ts",
+    "test:fork": "vitest run tests/checker.fork.test.ts",
     "test:watch": "vitest"
   },
   "dependencies": {
@@ -16,6 +17,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@viem/anvil": "^0.0.10",
     "tsx": "^4.7.0",
     "typescript": "^5.4.0",
     "vitest": "^2.0.0"

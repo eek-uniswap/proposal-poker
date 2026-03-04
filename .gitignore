@@ -1,6 +1,7 @@
 node_modules/
 .env
 .key
+.address
 dist/
 *.tsbuildinfo
 coverage/

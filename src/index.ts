@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { createPublicClient, createWalletClient, http } from 'viem'
 import { mainnet } from 'viem/chains'
 import { privateKeyToAccount, generatePrivateKey } from 'viem/accounts'
@@ -7,6 +7,7 @@ import { runCheckerCycle } from './checker.js'
 
 const INTERVAL_MS = 30_000
 const KEY_FILE = '.key'
+const ADDRESS_FILE = '.address'
 
 function getOrCreatePrivateKey(): `0x${string}` {
   const fromEnv = process.env.PRIVATE_KEY
@@ -25,9 +26,16 @@ function getOrCreatePrivateKey(): `0x${string}` {
   const fresh = generatePrivateKey()
   writeFileSync(KEY_FILE, fresh, { mode: 0o600 })
   const address = privateKeyToAccount(fresh).address
+  writeFileSync(ADDRESS_FILE, address)
   console.log(`[main] Generated new wallet: ${address}`)
   console.log(`[main] Private key saved to ${KEY_FILE} — send ETH to ${address} before transactions will succeed`)
   return fresh
+}
+
+function saveAddress(address: string): void {
+  if (!existsSync(ADDRESS_FILE)) {
+    writeFileSync(ADDRESS_FILE, address)
+  }
 }
 
 async function main(): Promise<void> {
@@ -39,6 +47,7 @@ async function main(): Promise<void> {
 
   const privateKey = getOrCreatePrivateKey()
   const account = privateKeyToAccount(privateKey)
+  saveAddress(account.address)
   const transport = http(rpcUrl)
 
   const publicClient = createPublicClient({ chain: mainnet, transport })

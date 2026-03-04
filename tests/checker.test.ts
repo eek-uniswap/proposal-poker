@@ -136,4 +136,32 @@ describe('runCheckerCycle', () => {
       expect.stringContaining('already executed')
     )
   })
+
+  it('notifies failure when receipt status is reverted', async () => {
+    const { publicClient, walletClient } = makeClients()
+    const pastEta = BigInt(Math.floor(Date.now() / 1000) - 100)
+    const txHash = '0xdef456' as `0x${string}`
+
+    publicClient.readContract
+      .mockResolvedValueOnce(94n)
+      .mockResolvedValueOnce({ eta: pastEta })
+
+    publicClient.multicall.mockResolvedValue([
+      { status: 'success', result: 5 },
+    ])
+    publicClient.getBlock.mockResolvedValue({
+      timestamp: BigInt(Math.floor(Date.now() / 1000)),
+    })
+    walletClient.writeContract.mockResolvedValue(txHash)
+    publicClient.waitForTransactionReceipt.mockResolvedValue({ status: 'reverted' })
+
+    await expect(
+      runCheckerCycle(publicClient as any, walletClient as any, notifyFn)
+    ).resolves.not.toThrow()
+
+    expect(notifyFn).toHaveBeenCalledWith(expect.stringContaining('94'))
+    expect(notifyFn).toHaveBeenCalledWith(
+      expect.stringContaining('reverted')
+    )
+  })
 })

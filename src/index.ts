@@ -8,13 +8,15 @@ const INTERVAL_MS = 30_000
 
 async function main(): Promise<void> {
   const rpcUrl = process.env.RPC_URL
-  const privateKey = process.env.PRIVATE_KEY as `0x${string}` | undefined
+  const rawPrivateKey = process.env.PRIVATE_KEY
 
   if (!rpcUrl) throw new Error('RPC_URL env var is required')
-  if (!privateKey) throw new Error('PRIVATE_KEY env var is required')
+  if (!rawPrivateKey) throw new Error('PRIVATE_KEY env var is required')
+  if (!rawPrivateKey.startsWith('0x')) throw new Error('PRIVATE_KEY must start with 0x')
   if (!process.env.TELEGRAM_BOT_TOKEN) throw new Error('TELEGRAM_BOT_TOKEN env var is required')
   if (!process.env.TELEGRAM_CHAT_ID) throw new Error('TELEGRAM_CHAT_ID env var is required')
 
+  const privateKey = rawPrivateKey as `0x${string}`
   const account = privateKeyToAccount(privateKey)
   const transport = http(rpcUrl)
 

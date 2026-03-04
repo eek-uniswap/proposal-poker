@@ -79,14 +79,18 @@ export async function runCheckerCycle(
         args: [id],
       })
 
-      await publicClient.waitForTransactionReceipt({ hash })
+      const receipt = await publicClient.waitForTransactionReceipt({ hash })
 
-      const message = `Proposal ${id} executed successfully!\nTx: ${hash}`
+      if (receipt.status === 'reverted') {
+        throw new Error('transaction reverted on-chain')
+      }
+
+      const message = `✅ Proposal ${id} executed successfully!\nTx: ${hash}`
       console.log(`[checker] ${message}`)
       await notifyFn(message)
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error)
-      const message = `Failed to execute proposal ${id}\nReason: ${reason}`
+      const message = `❌ Failed to execute proposal ${id}\nReason: ${reason}`
       console.error(`[checker] ${message}`)
       await notifyFn(message)
     }
